@@ -13,6 +13,7 @@
 # limitations under the License.
 
 # Build stage
+# Build stage
 FROM python:3.10-slim-bookworm AS builder
 
 RUN apt-get update \
@@ -26,10 +27,10 @@ RUN apt-get update \
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.18
 
 RUN wget -qO /bin/grpc_health_probe \
-    https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 \
+    "https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64" \
     && chmod +x /bin/grpc_health_probe
 
-WORKDIR /email_server
+WORKDIR /recommendationservice
 
 COPY requirements.txt .
 
@@ -41,9 +42,9 @@ RUN pip install --no-cache-dir \
 FROM python:3.10-slim-bookworm AS runtime
 
 ENV PYTHONUNBUFFERED=1
-ENV ENABLE_PROFILER=1
+ENV PORT=8080
 
-WORKDIR /email_server
+WORKDIR /recommendationservice
 
 COPY --from=builder /install/ /usr/local/
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
@@ -52,4 +53,5 @@ COPY . .
 
 EXPOSE 8080
 
-ENTRYPOINT ["python", "email_server.py"]
+# Change recommendation_server.py if your actual startup file has another name
+CMD ["python", "recommendation_server.py"]
